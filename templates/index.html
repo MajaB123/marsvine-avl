@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Marsvineparringer</title>
+</head>
+<body>
+    <h1>Registrerede parringer</h1>
+    <a href="/add">➕ Tilføj ny parring</a>
+    <ul>
+    {% for p in pairings %}
+        <li style="margin-bottom: 2em;">
+            <div style="display: flex; align-items: center; gap: 20px;">
+                
+                {% if p.male_image %}
+                    <div>
+                        <img src="{{ url_for('static', filename=p.male_image) }}" alt="{{ p.male_name }}" width="100"><br>
+                        <strong>{{ p.male_name }}</strong> (Han)<br>
+                        🐹 Alder ved parring: {{ p.male_age }}
+                    </div>
+                {% endif %}
+
+                {% if p.female_image %}
+                    <div>
+                        <img src="{{ url_for('static', filename=p.female_image) }}" alt="{{ p.female_name }}" width="100"><br>
+                        <strong>{{ p.female_name }}</strong> (Hun)<br>
+                        🐹 Alder ved parring: {{ p.female_age }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    🗓️ Sammensat: {{ p.pairing_date }}<br>
+                    👶 Termin: {{ p.term_interval }}<br><br>
+                    <form action="/delete/{{ p.id }}" method="post">
+                        <button type="submit" onclick="return confirm('Er du sikker på, at du vil slette denne parring?')">🗑️ Slet</button>
+                    </form>
+                </div>
+            </div>
+        </li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
