@@ -9,3 +9,4 @@ gunicorn==21.2.0
 python-dateutil==2.9.0.post0
 flask_login==0.6.3
 flask_bcrypt==1.0.1
+gspread==5.12.4
