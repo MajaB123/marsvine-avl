@@ -58,7 +58,7 @@ def load_user(user_id):
 @login_required
 def index():
     db = get_db()
-       rows = db.execute('''
+    rows = db.execute('''
         SELECT
             p.id,
             m.name AS male_name,
@@ -75,6 +75,7 @@ def index():
         JOIN guinea_pig f ON p.female_id = f.id
         JOIN user u ON p.user_id = u.id
     ''').fetchall()
+
 
 
     pairings = []
