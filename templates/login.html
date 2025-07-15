@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+</head>
+<body>
+    <h1>Login</h1>
+    
+    {% if error %}
+      <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        <label for="email">E-mail:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label for="password">Kodeord:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <button type="submit">Log ind</button>
+    </form>
+
+    <hr>
+
+    <p>Har du ikke en bruger? <a href="/register">Opret dig her</a></p>
+</body>
+</html>

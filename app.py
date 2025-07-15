@@ -1,9 +1,21 @@
 from flask import Flask, render_template, request, redirect
 import sqlite3
 from datetime import datetime, timedelta
-from dateutil.relativedelta import relativedelta  # Husk at installere: pip install python-dateutil
+from dateutil.relativedelta import relativedelta  # pip install python-dateutil
+from flask_login import LoginManager, login_user, logout_user, login_required, UserMixin, current_user
+from flask_bcrypt import Bcrypt
+import os
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
+
 
 app = Flask(__name__)
+app.secret_key = 'meget_hemmelig_nøgle_her'  # Skift til noget unikt!
+
+bcrypt = Bcrypt(app)
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
 # Forbindelse til databasen
 def get_db():
@@ -11,11 +23,42 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+# Funktion til at hente gyldige medlemsnumre fra Google Sheet
+def get_valid_membership_numbers():
+    import gspread
+    from oauth2client.service_account import ServiceAccountCredentials
+
+    scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
+    creds = ServiceAccountCredentials.from_json_keyfile_name('/etc/secrets/gspread-credentials.json', scope)
+    client = gspread.authorize(creds)
+
+    sheet = client.open_by_key('1lMO8pqkDTpiAeoUa21y9XUUevMzdPyrnMoEEj8693S4').sheet1
+    values = sheet.col_values(1)  # Antager medlemsnumre står i kolonne A
+    return values
+
+
+# User-klasse
+class User(UserMixin):
+    def __init__(self, id, email, is_admin):
+        self.id = id
+        self.email = email
+        self.is_admin = is_admin
+
+@login_manager.user_loader
+def load_user(user_id):
+    db = get_db()
+    user = db.execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
+    db.close()
+    if user:
+        return User(user['id'], user['email'], user['is_admin'])
+    return None
+
 # Forside – vis liste over parringer
 @app.route('/')
+@login_required
 def index():
     db = get_db()
-    rows = db.execute('''
+       rows = db.execute('''
         SELECT
             p.id,
             m.name AS male_name,
@@ -25,26 +68,26 @@ def index():
             f.image AS female_image,
             f.birth_date AS female_birth,
             p.pairing_date,
-            p.expected_due_date
+            p.expected_due_date,
+            u.email AS creator_email
         FROM pairing p
         JOIN guinea_pig m ON p.male_id = m.id
         JOIN guinea_pig f ON p.female_id = f.id
+        JOIN user u ON p.user_id = u.id
     ''').fetchall()
+
 
     pairings = []
     for row in rows:
         pairing = dict(row)
 
-        # Formatér sammensætningsdato
         pairing["pairing_date"] = datetime.strptime(pairing["pairing_date"], "%Y-%m-%d").strftime("%d-%m-%Y")
-
-        # Udregn terminsinterval
         pairing_date_obj = datetime.strptime(pairing["pairing_date"], "%d-%m-%Y")
+
         early_due = pairing_date_obj + timedelta(days=68)
         late_due = pairing_date_obj + timedelta(days=72)
         pairing["term_interval"] = f"{early_due.strftime('%d-%m-%Y')} til {late_due.strftime('%d-%m-%Y')}"
 
-        # Udregn alder for han og hun ved parring
         male_birth = datetime.strptime(pairing["male_birth"], "%Y-%m-%d")
         female_birth = datetime.strptime(pairing["female_birth"], "%Y-%m-%d")
 
@@ -61,6 +104,7 @@ def index():
 
 # Formular til ny parring
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add():
     db = get_db()
     pigs = db.execute('SELECT * FROM guinea_pig').fetchall()
@@ -72,8 +116,8 @@ def add():
         due = datetime.strptime(date, "%Y-%m-%d") + timedelta(days=59)
 
         db.execute(
-            'INSERT INTO pairing (male_id, female_id, pairing_date, expected_due_date) VALUES (?, ?, ?, ?)',
-            (male, female, date, due.date())
+            'INSERT INTO pairing (male_id, female_id, pairing_date, expected_due_date, user_id) VALUES (?, ?, ?, ?, ?)',
+            (male, female, date, due.date(), current_user.id)
         )
         db.commit()
         db.close()
@@ -82,18 +126,84 @@ def add():
     db.close()
     return render_template('add_pairing.html', pigs=pigs)
 
-# Slet en parring
+# Slet en parring – kun hvis ejer eller admin
 @app.route('/delete/<int:id>', methods=['POST'])
+@login_required
 def delete(id):
     db = get_db()
+    pairing = db.execute('SELECT * FROM pairing WHERE id = ?', (id,)).fetchone()
+
+    if not pairing:
+        db.close()
+        return "Parring ikke fundet", 404
+
+    if pairing['user_id'] != current_user.id and not current_user.is_admin:
+        db.close()
+        return "Du har ikke tilladelse til at slette denne parring", 403
+
     db.execute('DELETE FROM pairing WHERE id = ?', (id,))
     db.commit()
     db.close()
     return redirect('/')
 
-# Start Flask-serveren
-import os
+# Login-rute
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        email = request.form['email']
+        password = request.form['password']
+        db = get_db()
+        user = db.execute('SELECT * FROM user WHERE email = ?', (email,)).fetchone()
+        db.close()
 
+        if user and bcrypt.check_password_hash(user['password'], password):
+            login_user(User(user['id'], user['email'], user['is_admin']))
+            return redirect('/')
+        else:
+            error = 'Forkert e-mail eller kodeord'
+    return render_template('login.html', error=error)
+
+# Logout-rute
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect('/login')
+# Registrering af ny bruger
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    error = None
+    success = None
+
+    if request.method == 'POST':
+        email = request.form['email']
+        name = request.form['name']
+        password = request.form['password']
+        membership_number = request.form['membership_number']
+
+        # Tjek medlemsnummer mod Google Sheet
+        valid_numbers = get_valid_membership_numbers()
+        if membership_number not in valid_numbers:
+            error = "Medlemsnummeret findes ikke. Kontakt administrator."
+        else:
+            db = get_db()
+            # Tjek om brugeren allerede findes
+            existing = db.execute('SELECT * FROM user WHERE email = ?', (email,)).fetchone()
+            if existing:
+                error = "En bruger med denne e-mail findes allerede."
+            else:
+                hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+                db.execute(
+                    'INSERT INTO user (email, password, membership_number, is_admin) VALUES (?, ?, ?, ?)',
+                    (email, hashed_pw, membership_number, 0)
+                )
+                db.commit()
+                db.close()
+                success = "Bruger oprettet! Du kan nu logge ind."
+    return render_template('register.html', error=error, success=success)
+
+# Start Flask-serveren
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5001))
     app.run(debug=False, host="0.0.0.0", port=port)
