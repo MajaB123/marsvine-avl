@@ -24,7 +24,7 @@ def get_db():
     return conn
 
 # Funktion til at hente gyldige medlemsnumre fra Google Sheet
-ddef get_valid_membership_numbers():
+def get_valid_membership_numbers():
     scope = [
         'https://spreadsheets.google.com/feeds',
         'https://www.googleapis.com/auth/drive'
