@@ -204,6 +204,27 @@ def register():
                 success = "Bruger oprettet! Du kan nu logge ind."
     return render_template('register.html', error=error, success=success)
 
+# Midlertidig route til at oprette admin-bruger
+@app.route('/create-admin')
+def create_admin():
+    email = "bonde_44@hotmail.com"
+    password = "mithemmeligekodeord"
+    membership_number = "12345"
+    is_admin = 1
+
+    hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
+
+    db = get_db()
+    db.execute("DELETE FROM user WHERE email = ?", (email,))
+    db.execute('''
+        INSERT INTO user (email, password, membership_number, is_admin)
+        VALUES (?, ?, ?, ?)
+    ''', (email, hashed_pw, membership_number, is_admin))
+    db.commit()
+    db.close()
+
+    return "✅ Admin oprettet med korrekt hash!"
+
 # Start Flask-serveren
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
