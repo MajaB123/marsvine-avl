@@ -1,15 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Marsvineparringer</title>
-</head>
-<body>
-    <h1>Registrerede parringer</h1>
-    <a href="/add">➕ Tilføj ny parring</a>
-    <ul>
+{% extends 'base.html' %}
+
+{% block title %}Marsvineparringer{% endblock %}
+
+{% block content %}
+<h1>Registrerede parringer</h1>
+
+<a href="/add">➕ Tilføj ny parring</a>
+<ul style="list-style-type: none; padding: 0;">
     {% for p in pairings %}
-        <li style="margin-bottom: 2em;">
-            <div style="display: flex; align-items: center; gap: 20px;">
+        <li style="margin-bottom: 2em; border-bottom: 1px solid #ccc; padding-bottom: 1em;">
+            <div style="display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
                 
                 {% if p.male_image %}
                     <div>
@@ -29,7 +29,8 @@
 
                 <div>
                     🗓️ Sammensat: {{ p.pairing_date }}<br>
-                    👶 Termin: {{ p.term_interval }}<br><br>
+                    👶 Termin: {{ p.term_interval }}<br>
+                    ✍️ Oprettet af: {{ p.creator_email }}<br><br>
                     <form action="/delete/{{ p.id }}" method="post">
                         <button type="submit" onclick="return confirm('Er du sikker på, at du vil slette denne parring?')">🗑️ Slet</button>
                     </form>
@@ -37,6 +38,5 @@
             </div>
         </li>
     {% endfor %}
-    </ul>
-</body>
-</html>
+</ul>
+{% endblock %}

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Marsvineavl{% endblock %}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 2em;
+            background-color: #f8f8f8;
+        }
+        nav {
+            background-color: #ddd;
+            padding: 1em;
+            margin-bottom: 2em;
+        }
+        nav a {
+            margin-right: 1em;
+            text-decoration: none;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <nav>
+        <a href="/">Forside</a>
+        {% if current_user.is_authenticated %}
+            <a href="/add">Ny parring</a>
+            <a href="/logout">Log ud</a>
+        {% else %}
+            <a href="/login">Log ind</a>
+            <a href="/register">Opret bruger</a>
+        {% endif %}
+    </nav>
+
+    {% block content %}{% endblock %}
+
+</body>
+</html>

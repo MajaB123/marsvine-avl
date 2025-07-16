@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Opret bruger{% endblock %}
+
+{% block content %}
+<h1>Opret ny bruger</h1>
+
+{% if error %}
+    <p style="color: red;">{{ error }}</p>
+{% endif %}
+{% if success %}
+    <p style="color: green;">{{ success }}</p>
+    <p><a href="/login">Log ind her</a></p>
+{% else %}
+    <form method="POST">
+        <label for="name">Navn:</label><br>
+        <input type="text" name="name" required><br><br>
+
+        <label for="email">E-mail:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label for="password">Kodeord:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label for="membership_number">Medlemsnummer:</label><br>
+        <input type="text" name="membership_number" required><br><br>
+
+        <button type="submit">Opret bruger</button>
+    </form>
+{% endif %}
+
+<p><a href="/login">⬅️ Tilbage til login</a></p>
+{% endblock %}
