@@ -24,26 +24,21 @@ def get_db():
     return conn
 
 # Funktion til at hente gyldige medlemsnumre fra Google Sheet
-def get_valid_membership_numbers():
-    import gspread
-    import json
-    from oauth2client.service_account import ServiceAccountCredentials
-
-    # Læs credentials fra environment variable
-    credentials_data = os.environ.get("GOOGLE_CREDS_JSON")
-    if not credentials_data:
-        raise Exception("❌ GOOGLE_CREDS_JSON ikke fundet i miljøvariabler!")
-
-    creds_dict = json.loads(credentials_data)
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, [
+ddef get_valid_membership_numbers():
+    scope = [
         'https://spreadsheets.google.com/feeds',
         'https://www.googleapis.com/auth/drive'
-    ])
-
+    ]
+    
+    creds = ServiceAccountCredentials.from_json_keyfile_name(
+        '/etc/secrets/gspread-credentials.json', scope
+    )
+    
     client = gspread.authorize(creds)
     sheet = client.open_by_key('1lMO8pqkDTpiAeoUa21y9XUUevMzdPyrnMoEEj8693S4').sheet1
     values = sheet.col_values(1)
     return values
+
 
 # User-klasse
 class User(UserMixin):
