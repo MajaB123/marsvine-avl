@@ -239,6 +239,49 @@ def admin_users():
     db.close()
     return render_template('admin_users.html', users=users)
 
+@app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
+@login_required
+def admin_delete_user(user_id):
+    if not current_user.is_admin:
+        return "Adgang nægtet", 403
+
+    db = get_db()
+    db.execute('DELETE FROM user WHERE id = ?', (user_id,))
+    db.commit()
+    db.close()
+    return redirect('/admin/users')
+@app.route('/admin/users/edit/<int:user_id>', methods=['GET', 'POST'])
+@login_required
+def admin_edit_user(user_id):
+    if not current_user.is_admin:
+        return "Adgang nægtet", 403
+
+    db = get_db()
+    user = db.execute('SELECT * FROM user WHERE id = ?', (user_id,)).fetchone()
+
+    if not user:
+        db.close()
+        return "Bruger ikke fundet", 404
+
+    if request.method == 'POST':
+        name = request.form['name']
+        email = request.form['email']
+        membership_number = request.form['membership_number']
+        is_admin = 1 if 'is_admin' in request.form else 0
+
+        db.execute('''
+            UPDATE user
+            SET name = ?, email = ?, membership_number = ?, is_admin = ?
+            WHERE id = ?
+        ''', (name, email, membership_number, is_admin, user_id))
+        db.commit()
+        db.close()
+        return redirect('/admin/users')
+
+    db.close()
+    return render_template('admin_edit_user.html', user=user)
+
+
 # Start Flask-serveren
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))

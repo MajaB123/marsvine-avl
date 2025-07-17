@@ -1,34 +1,26 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Admin – Brugere</title>
-</head>
-<body>
-    <h1>👮‍♀️ Brugerstyring</h1>
-    <p><a href="/">Tilbage til forsiden</a></p>
-    
-    <table border="1" cellpadding="8" cellspacing="0">
-        <tr>
-            <th>ID</th>
-            <th>Navn</th>
-            <th>E-mail</th>
-            <th>Medlemsnummer</th>
-            <th>Admin?</th>
-            <th>Handlinger</th>
-        </tr>
-        {% for user in users %}
-        <tr>
-            <td>{{ user.id }}</td>
-            <td>{{ user.name or "Ukendt" }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.membership_number }}</td>
-            <td>{{ "Ja" if user.is_admin else "Nej" }}</td>
-            <td>
-                <!-- Her kommer senere knapper til rediger, slet osv. -->
-                <a href="#">📝 Rediger</a> | <a href="#">🗑️ Slet</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
-</body>
-</html>
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>ID</th>
+        <th>Navn</th>
+        <th>E-mail</th>
+        <th>Medlemsnummer</th>
+        <th>Admin?</th>
+        <th>Handlinger</th>
+    </tr>
+    {% for user in users %}
+    <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.name or 'Ingen navn' }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.membership_number }}</td>
+        <td>{{ '✅' if user.is_admin else '❌' }}</td>
+        <td>
+            <a href="/admin/users/edit/{{ user.id }}">✏️ Rediger</a>
+            <form action="/admin/users/delete/{{ user.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Er du sikker på, at du vil slette brugeren?')">
+                <button type="submit">🗑️ Slet</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+

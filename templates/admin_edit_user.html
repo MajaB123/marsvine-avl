@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rediger bruger</title>
+</head>
+<body>
+    <h1>Rediger bruger: {{ user.name }}</h1>
+
+    <form method="POST">
+        <label for="name">Navn:</label><br>
+        <input type="text" name="name" value="{{ user.name }}" required><br><br>
+
+        <label for="email">E-mail:</label><br>
+        <input type="email" name="email" value="{{ user.email }}" required><br><br>
+
+        <label for="membership_number">Medlemsnummer:</label><br>
+        <input type="text" name="membership_number" value="{{ user.membership_number }}" required><br><br>
+
+        <label>
+            <input type="checkbox" name="is_admin" {% if user.is_admin %}checked{% endif %}>
+            Admin
+        </label><br><br>
+
+        <button type="submit">Gem ændringer</button>
+    </form>
+
+    <p><a href="/admin/users">Tilbage til brugeroversigt</a></p>
+</body>
+</html>
