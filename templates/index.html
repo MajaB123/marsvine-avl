@@ -27,14 +27,15 @@
                     </div>
                 {% endif %}
 
-                <div>
-                    🗓️ Sammensat: {{ p.pairing_date }}<br>
-                    👶 Termin: {{ p.term_interval }}<br>
-                    ✍️ Oprettet af: {{ p.creator_email }}<br><br>
-                    <form action="/delete/{{ p.id }}" method="post">
-                        <button type="submit" onclick="return confirm('Er du sikker på, at du vil slette denne parring?')">🗑️ Slet</button>
-                    </form>
-                </div>
+<div>
+    🗓️ Sammensat: {{ p.pairing_date }}<br>
+    👶 Termin: {{ p.term_interval }}<br>
+    <p><strong>Oprettet af:</strong> {{ p.creator_email }}</p>
+    <form action="/delete/{{ p.id }}" method="post">
+        <button type="submit" onclick="return confirm('Er du sikker på, at du vil slette denne parring?')">🗑️ Slet</button>
+    </form>
+</div>
+
             </div>
         </li>
     {% endfor %}
