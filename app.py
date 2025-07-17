@@ -199,14 +199,15 @@ def register():
             else:
                 hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
                 db.execute(
-                    db.execute(
-    'INSERT INTO user (name, email, password, membership_number, is_admin) VALUES (?, ?, ?, ?, ?)',
-    (name, email, hashed_pw, membership_number, 0)
-)
+                    'INSERT INTO user (name, email, password, membership_number, is_admin) VALUES (?, ?, ?, ?, ?)',
+                    (name, email, hashed_pw, membership_number, 0)
+                )
                 db.commit()
                 db.close()
                 success = "Bruger oprettet! Du kan nu logge ind."
+
     return render_template('register.html', error=error, success=success)
+
 
 # Midlertidig route til at oprette admin-bruger
 @app.route('/create-admin')
