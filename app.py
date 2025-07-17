@@ -228,6 +228,17 @@ def create_admin():
 
     return "✅ Admin oprettet med korrekt hash!"
 
+@app.route('/admin/users')
+@login_required
+def admin_users():
+    if not current_user.is_admin:
+        return "Adgang nægtet – kun for admins", 403
+
+    db = get_db()
+    users = db.execute('SELECT * FROM user').fetchall()
+    db.close()
+    return render_template('admin_users.html', users=users)
+
 # Start Flask-serveren
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))
