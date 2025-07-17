@@ -199,9 +199,10 @@ def register():
             else:
                 hashed_pw = bcrypt.generate_password_hash(password).decode('utf-8')
                 db.execute(
-                    'INSERT INTO user (email, password, membership_number, is_admin) VALUES (?, ?, ?, ?)',
-                    (email, hashed_pw, membership_number, 0)
-                )
+                    db.execute(
+    'INSERT INTO user (name, email, password, membership_number, is_admin) VALUES (?, ?, ?, ?, ?)',
+    (name, email, hashed_pw, membership_number, 0)
+)
                 db.commit()
                 db.close()
                 success = "Bruger oprettet! Du kan nu logge ind."
