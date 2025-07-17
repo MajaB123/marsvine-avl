@@ -1,3 +1,9 @@
+<form method="GET" action="/admin/users">
+    <input type="text" name="q" placeholder="Søg navn eller e-mail" value="{{ request.args.get('q', '') }}">
+    <button type="submit">🔍 Søg</button>
+</form>
+<br>
+
 <table border="1" cellpadding="8" cellspacing="0">
     <tr>
         <th>ID</th>

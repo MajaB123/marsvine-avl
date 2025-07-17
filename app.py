@@ -234,10 +234,20 @@ def admin_users():
     if not current_user.is_admin:
         return "Adgang nægtet – kun for admins", 403
 
+    query = request.args.get('q', '').lower()
+
     db = get_db()
-    users = db.execute('SELECT * FROM user').fetchall()
+    if query:
+        users = db.execute('''
+            SELECT * FROM user
+            WHERE LOWER(name) LIKE ? OR LOWER(email) LIKE ?
+        ''', (f'%{query}%', f'%{query}%')).fetchall()
+    else:
+        users = db.execute('SELECT * FROM user').fetchall()
     db.close()
+
     return render_template('admin_users.html', users=users)
+
 
 @app.route('/admin/users/delete/<int:user_id>', methods=['POST'])
 @login_required
