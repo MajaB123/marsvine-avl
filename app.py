@@ -323,6 +323,35 @@ def edit_pairing(pairing_id):
 
     db.close()
     return render_template('edit_pairing.html', pairing=pairing)
+@app.route('/edit/<int:pairing_id>', methods=['GET', 'POST'])
+@login_required
+def edit_pairing(pairing_id):
+    db = get_db()
+    pairing = db.execute('SELECT * FROM pairing WHERE id = ?', (pairing_id,)).fetchone()
+
+    if not pairing:
+        db.close()
+        return "Parring ikke fundet", 404
+
+    # Kun den bruger, der har oprettet parringen, må redigere den
+    if pairing['user_id'] != current_user.id:
+        db.close()
+        return "Du har ikke adgang til at redigere denne parring", 403
+
+    if request.method == 'POST':
+        new_date = request.form['pairing_date']
+        new_note = request.form['note']
+        expected_due = datetime.strptime(new_date, "%Y-%m-%d") + timedelta(days=59)
+
+        db.execute('''
+            UPDATE pairing SET pairing_date = ?, expected_due_date = ?, note = ? WHERE id = ?
+        ''', (new_date, expected_due.date(), new_note, pairing_id))
+        db.commit()
+        db.close()
+        return redirect('/')
+
+    db.close()
+    return render_template('edit_pairing.html', pairing=pairing)
 
 
 # Start Flask-serveren
