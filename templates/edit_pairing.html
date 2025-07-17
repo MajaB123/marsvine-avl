@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Rediger parring</title>
+</head>
+<body>
+    <h1>✏️ Rediger parring</h1>
+    <form method="POST">
+        <label for="pairing_date">Ny parringdato:</label><br>
+        <input type="date" name="pairing_date" value="{{ pairing.pairing_date }}" required><br><br>
+
+        <label for="note">Note (valgfri):</label><br>
+        <textarea name="note" rows="4" cols="40">{{ pairing.note or '' }}</textarea><br><br>
+
+        <button type="submit">Gem ændringer</button>
+        <a href="/">Afbryd</a>
+    </form>
+</body>
+</html>
