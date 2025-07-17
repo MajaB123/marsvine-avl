@@ -28,15 +28,15 @@
                 {% endif %}
 
 <div>
-    🗓️ Sammensat: {{ pairing.pairing_date }}<br>
-    👶 Termin: {{ pairing.term_interval }}<br>
-    <p><strong>Oprettet af:</strong> {{ pairing.creator_email }}</p>
+    🗓️ Sammensat: {{ p.pairing_date }}<br>
+    👶 Termin: {{ p.term_interval }}<br>
+    <p><strong>Oprettet af:</strong> {{ p.creator_email }}</p>
 
-    {% if pairing.creator_email == current_user.email %}
-        <a href="/edit/{{ pairing.id }}">✏️ Rediger</a>
+    {% if p.creator_email == current_user.email %}
+        <a href="/edit/{{ p.id }}">✏️ Rediger</a>
     {% endif %}
 
-    <form action="/delete/{{ pairing.id }}" method="post">
+    <form action="/delete/{{ p.id }}" method="post">
         <button type="submit" onclick="return confirm('Er du sikker på, at du vil slette denne parring?')">🗑️ Slet</button>
     </form>
 </div>
