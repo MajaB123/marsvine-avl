@@ -31,6 +31,9 @@
     🗓️ Sammensat: {{ p.pairing_date }}<br>
     👶 Termin: {{ p.term_interval }}<br>
     <p><strong>Oprettet af:</strong> {{ p.creator_email }}</p>
+    {% if p.creator_email == current_user.email and p.note %}
+    <p><strong>Note:</strong> {{ p.note }}</p>
+{% endif %}
 
     {% if p.creator_email == current_user.email %}
         <a href="/edit/{{ p.id }}">✏️ Rediger</a>
