@@ -14,6 +14,7 @@ google-auth==2.40.3
 google-auth-oauthlib==1.2.2
 gotrue==2.12.3
 gspread==6.2.1
+gunicorn==23.0.0
 h11==0.16.0
 h2==4.2.0
 hpack==4.1.0
