@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: marsvine-avl
+    env: python
+    buildCommand: |
+      pip install -r requirements.txt
+      python init_db.py
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PORT
+        value: 10000
