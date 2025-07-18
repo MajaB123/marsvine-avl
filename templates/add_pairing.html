@@ -6,22 +6,26 @@
 <body>
     <h1>Ny parring</h1>
     <form method="post">
-    <label for="male">Han:</label><br>
-{% for pig in pigs if pig['gender'] == 'M' %}
-  {% if pig['image'] %}
-    <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
-  {% endif %}
-  <input type="radio" name="male" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
-{% endfor %}
-<br><br>
-<label for="female">Hun:</label><br>
-{% for pig in pigs if pig['gender'] == 'F' %}
-  {% if pig['image'] %}
-    <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
-  {% endif %}
-  <input type="radio" name="female" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
-{% endfor %}
-<br><br>
+    
+        <label for="male">Han:</label><br>
+        {% for pig in males %}
+            {% if pig['image'] %}
+                <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
+            {% endif %}
+            <input type="radio" name="male" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
+        {% endfor %}
+        
+        <br><br>
+        
+        <label for="female">Hun:</label><br>
+        {% for pig in females %}
+            {% if pig['image'] %}
+                <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
+            {% endif %}
+            <input type="radio" name="female" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
+        {% endfor %}
+
+        <br><br>
 
         <label for="date">Dato for sammensætning:</label>
         <input type="date" name="date"><br><br>
@@ -32,4 +36,5 @@
     <a href="/">⬅️ Tilbage</a>
 </body>
 </html>
+
 

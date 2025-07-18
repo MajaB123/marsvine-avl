@@ -1,3 +1,4 @@
+from supabase_client import supabase
 from flask import Flask, render_template, request, redirect
 import sqlite3
 from datetime import datetime, timedelta
@@ -8,9 +9,16 @@ import os
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
+# 🧩 Supabase import og setup
+from supabase import create_client
+SUPABASE_URL = "https://dhffpzifxweschuiwiqr.supabase.co"
+SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRoZmZwemlmeHdlc2NodWl3aXFyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDU0OTQ5NDksImV4cCI6MjAyMTA3MDk0OX0.cGpOxk-cn8h0bgVa3iER0nm-T4yymGBt_l5ess08iec"  # ← din anonyme nøgle her
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# 🎬 Flask setup
 app = Flask(__name__)
-app.secret_key = 'meget_hemmelig_nøgle_her'  # Skift til noget unikt!
+app.secret_key = 'aZ47&}Sl5|0V'  # Skift til noget unikt!
+
 
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
@@ -110,8 +118,23 @@ def index():
 @app.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    db = get_db()
-    pigs = db.execute('SELECT * FROM guinea_pig').fetchall()
+    from supabase_client import supabase  # sørg for at denne fil eksisterer
+
+    # Hent marsvin fra Supabase
+    pigs_data = supabase.table("guinea_pigs").select("*").execute().data
+
+    pigs = []
+    for pig in pigs_data:
+        pigs.append({
+            "id": pig["id"],
+            "name": pig["name"],
+            "gender": pig["sex"],  # så det matcher 'gender' i HTML-template
+            "birth_date": pig["date_of_birth"],
+            "pedigree_number": pig["pedigree_number"],
+            "color": pig["color"],
+            "titles": pig["titles"],
+            "race_id": pig["race_id"]
+        })
 
     if request.method == 'POST':
         male = request.form['male']
@@ -119,6 +142,7 @@ def add():
         date = request.form['date']
         due = datetime.strptime(date, "%Y-%m-%d") + timedelta(days=59)
 
+        db = get_db()
         db.execute(
             'INSERT INTO pairing (male_id, female_id, pairing_date, expected_due_date, user_id) VALUES (?, ?, ?, ?, ?)',
             (male, female, date, due.date(), current_user.id)
@@ -127,7 +151,6 @@ def add():
         db.close()
         return redirect('/')
 
-    db.close()
     return render_template('add_pairing.html', pigs=pigs)
 
 # Slet en parring – kun hvis ejer eller admin
@@ -167,6 +190,7 @@ def login():
         else:
             error = 'Forkert e-mail eller kodeord'
     return render_template('login.html', error=error)
+
 
 # Logout-rute
 @app.route('/logout')
@@ -328,5 +352,6 @@ def edit_pairing(pairing_id):
 
 # Start Flask-serveren
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5001))
+    port = int(os.environ.get("PORT", 5004))
     app.run(debug=False, host="0.0.0.0", port=port)
+
