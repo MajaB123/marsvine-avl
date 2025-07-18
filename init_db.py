@@ -1,6 +1,10 @@
+import os
 import sqlite3
 
-conn = sqlite3.connect('database.db')
+basedir = os.path.abspath(os.path.dirname(__file__))
+db_path = os.path.join(basedir, 'database.db')
+
+conn = sqlite3.connect(db_path)
 cursor = conn.cursor()
 
 # Opret nødvendige tabeller
@@ -31,3 +35,4 @@ CREATE TABLE IF NOT EXISTS pairing (
 conn.commit()
 conn.close()
 print("✅ Database-tabeller oprettet!")
+

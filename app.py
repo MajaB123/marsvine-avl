@@ -27,7 +27,9 @@ login_manager.login_view = 'login'
 
 # Forbindelse til databasen
 def get_db():
-    conn = sqlite3.connect('database.db')
+    basedir = os.path.abspath(os.path.dirname(__file__))
+    db_path = os.path.join(basedir, 'database.db')
+    conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -68,26 +70,66 @@ def load_user(user_id):
 @app.route('/')
 @login_required
 def index():
+    from supabase_client import supabase
+
+    # Hent alle parringer fra SQLite
     db = get_db()
     rows = db.execute('''
         SELECT
             p.id,
-            m.name AS male_name,
-            m.image AS male_image,
-            m.birth_date AS male_birth,
-            f.name AS female_name,
-            f.image AS female_image,
-            f.birth_date AS female_birth,
+            p.male_id,
+            p.female_id,
             p.pairing_date,
             p.expected_due_date,
+            p.note,
             u.email AS creator_email
         FROM pairing p
-        JOIN guinea_pig m ON p.male_id = m.id
-        JOIN guinea_pig f ON p.female_id = f.id
         JOIN user u ON p.user_id = u.id
     ''').fetchall()
+    db.close()
 
+    # Hent alle marsvin fra Supabase
+    pigs_data = supabase.table("guinea_pigs").select("*").execute().data
+    pigs = {pig["id"]: pig for pig in pigs_data}
 
+    pairings = []
+    for row in rows:
+        pairing = dict(row)
+
+        male = pigs.get(pairing["male_id"])
+        female = pigs.get(pairing["female_id"])
+
+        if not male or not female:
+            continue  # spring over hvis marsvin ikke findes
+
+        pairing["male_name"] = male["name"]
+        pairing["male_image"] = male.get("image", "")
+        pairing["male_birth"] = male["date_of_birth"]
+
+        pairing["female_name"] = female["name"]
+        pairing["female_image"] = female.get("image", "")
+        pairing["female_birth"] = female["date_of_birth"]
+
+        # Datoformatering og terminberegning
+        pairing["pairing_date"] = datetime.strptime(pairing["pairing_date"], "%Y-%m-%d").strftime("%d-%m-%Y")
+        pairing_date_obj = datetime.strptime(pairing["pairing_date"], "%d-%m-%Y")
+
+        early_due = pairing_date_obj + timedelta(days=68)
+        late_due = pairing_date_obj + timedelta(days=72)
+        pairing["term_interval"] = f"{early_due.strftime('%d-%m-%Y')} til {late_due.strftime('%d-%m-%Y')}"
+
+        male_birth = datetime.strptime(pairing["male_birth"], "%Y-%m-%d")
+        female_birth = datetime.strptime(pairing["female_birth"], "%Y-%m-%d")
+
+        male_age = relativedelta(pairing_date_obj, male_birth)
+        female_age = relativedelta(pairing_date_obj, female_birth)
+
+        pairing["male_age"] = f"{male_age.years} år, {male_age.months} mdr"
+        pairing["female_age"] = f"{female_age.years} år, {female_age.months} mdr"
+
+        pairings.append(pairing)
+
+    return render_template('index.html', pairings=pairings)
 
     pairings = []
     for row in rows:
