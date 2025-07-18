@@ -2,39 +2,67 @@
 <html>
 <head>
     <title>Tilføj parring</title>
+    <script>
+        // JavaScript til at filtrere marsvin baseret på brugerens søgning
+        function filterPigs(inputId, pigsListId) {
+            var input, filter, pigsList, pigs, pig, i;
+            input = document.getElementById(inputId);
+            filter = input.value.toUpperCase();
+            pigsList = document.getElementById(pigsListId);
+            pigs = pigsList.getElementsByTagName("li");
+
+            for (i = 0; i < pigs.length; i++) {
+                pig = pigs[i];
+                if (pig.innerHTML.toUpperCase().indexOf(filter) > -1) {
+                    pigs[i].style.display = "";
+                } else {
+                    pigs[i].style.display = "none";
+                }
+            }
+        }
+    </script>
 </head>
 <body>
     <h1>Ny parring</h1>
     <form method="post">
     
+        <!-- Han søgning -->
         <label for="male">Han:</label><br>
-        {% for pig in males %}
-            {% if pig['image'] %}
-                <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
-            {% endif %}
-            <input type="radio" name="male" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
-        {% endfor %}
-        
+        <input type="text" id="maleSearch" onkeyup="filterPigs('maleSearch', 'maleList')" placeholder="Søg efter han marsvin..." autocomplete="off">
+        <ul id="maleList">
+            {% for pig in males %}
+                <li>
+                    {% if pig['image'] %}
+                        <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
+                    {% endif %}
+                    <input type="radio" name="male" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
+                </li>
+            {% endfor %}
+        </ul>
+
         <br><br>
-        
+
+        <!-- Hun søgning -->
         <label for="female">Hun:</label><br>
-        {% for pig in females %}
-            {% if pig['image'] %}
-                <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
-            {% endif %}
-            <input type="radio" name="female" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
-        {% endfor %}
+        <input type="text" id="femaleSearch" onkeyup="filterPigs('femaleSearch', 'femaleList')" placeholder="Søg efter hun marsvin..." autocomplete="off">
+        <ul id="femaleList">
+            {% for pig in females %}
+                <li>
+                    {% if pig['image'] %}
+                        <img src="{{ url_for('static', filename=pig['image']) }}" alt="{{ pig['name'] }}" width="100"><br>
+                    {% endif %}
+                    <input type="radio" name="female" value="{{ pig['id'] }}"> {{ pig['name'] }}<br><br>
+                </li>
+            {% endfor %}
+        </ul>
 
         <br><br>
 
+        <!-- Dato for sammensætning -->
         <label for="date">Dato for sammensætning:</label>
         <input type="date" name="date"><br><br>
 
-        <button type="submit">Gem parring</button>
-    </form>
-    <br>
-    <a href="/">⬅️ Tilbage</a>
-</body>
-</html>
+        <button type="submit">Gem parring</butto
+
 
 
