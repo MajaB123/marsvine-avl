@@ -351,15 +351,19 @@ def edit_pairing(pairing_id):
 
 
 # Start Flask-serveren
+import os
 import subprocess
 
 if __name__ == "__main__":
-    # Kør init_db.py for at sikre tabellerne findes
-    try:
-        subprocess.run(["python", "init_db.py"], check=True)
-        print("✅ init_db.py blev kørt")
-    except Exception as e:
-        print(f"⚠️ Kunne ikke køre init_db.py: {e}")
+    if not os.path.exists("database.db"):
+        print("🚧 database.db ikke fundet – forsøger at køre init_db.py")
+        try:
+            subprocess.run(["python", "init_db.py"], check=True)
+            print("✅ init_db.py blev kørt")
+        except Exception as e:
+            print(f"⚠️ Fejl under kørsel af init_db.py: {e}")
+    else:
+        print("✅ database.db findes allerede")
 
     port = int(os.environ.get("PORT", 5004))
     app.run(debug=False, host="0.0.0.0", port=port)
