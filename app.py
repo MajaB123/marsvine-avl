@@ -96,12 +96,14 @@ def index():
     for row in rows:
         pairing = dict(row)
 
+        # Hent detaljer om han og hun fra Supabase data
         male = pigs.get(pairing["male_id"])
         female = pigs.get(pairing["female_id"])
 
         if not male or not female:
             continue  # spring over hvis marsvin ikke findes
 
+        # Tilføj data om han og hun til parringen
         pairing["male_name"] = male["name"]
         pairing["male_image"] = male.get("image", "")
         pairing["male_birth"] = male["date_of_birth"]
@@ -118,6 +120,7 @@ def index():
         late_due = pairing_date_obj + timedelta(days=72)
         pairing["term_interval"] = f"{early_due.strftime('%d-%m-%Y')} til {late_due.strftime('%d-%m-%Y')}"
 
+        # Beregn alder på han og hun
         male_birth = datetime.strptime(pairing["male_birth"], "%Y-%m-%d")
         female_birth = datetime.strptime(pairing["female_birth"], "%Y-%m-%d")
 
@@ -129,31 +132,6 @@ def index():
 
         pairings.append(pairing)
 
-    return render_template('index.html', pairings=pairings)
-
-    pairings = []
-    for row in rows:
-        pairing = dict(row)
-
-        pairing["pairing_date"] = datetime.strptime(pairing["pairing_date"], "%Y-%m-%d").strftime("%d-%m-%Y")
-        pairing_date_obj = datetime.strptime(pairing["pairing_date"], "%d-%m-%Y")
-
-        early_due = pairing_date_obj + timedelta(days=68)
-        late_due = pairing_date_obj + timedelta(days=72)
-        pairing["term_interval"] = f"{early_due.strftime('%d-%m-%Y')} til {late_due.strftime('%d-%m-%Y')}"
-
-        male_birth = datetime.strptime(pairing["male_birth"], "%Y-%m-%d")
-        female_birth = datetime.strptime(pairing["female_birth"], "%Y-%m-%d")
-
-        male_age = relativedelta(pairing_date_obj, male_birth)
-        female_age = relativedelta(pairing_date_obj, female_birth)
-
-        pairing["male_age"] = f"{male_age.years} år, {male_age.months} mdr"
-        pairing["female_age"] = f"{female_age.years} år, {female_age.months} mdr"
-
-        pairings.append(pairing)
-
-    db.close()
     return render_template('index.html', pairings=pairings)
 
 # Formular til ny parring
