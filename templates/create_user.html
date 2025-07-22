@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Opret Bruger</title>
+</head>
+<body>
+    <h1>Opret Almindelig Bruger</h1>
+    
+    <form method="POST">
+        <label for="name">Navn:</label><br>
+        <input type="text" id="name" name="name" required><br><br>
+        
+        <label for="email">Email:</label><br>
+        <input type="email" id="email" name="email" required><br><br>
+        
+        <label for="membership_number">Medlemsnummer:</label><br>
+        <input type="text" id="membership_number" name="membership_number" required><br><br>
+        
+        <label for="password">Kodeord:</label><br>
+        <input type="password" id="password" name="password" required><br><br>
+        
+        <button type="submit">Opret Bruger</button>
+    </form>
+    
+    {% if error %}
+        <p style="color:red;">{{ error }}</p>
+    {% endif %}
+</body>
+</html>
